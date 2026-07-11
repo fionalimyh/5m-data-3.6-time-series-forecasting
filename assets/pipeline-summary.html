@@ -438,6 +438,9 @@
             <p class="sub-desc">After removing trend and seasonality, whatever is left should look random with a mean close to zero — anything structured left behind means the decomposition missed something.</p>
           </div>
         </div>
+        <div class="callout">
+          <strong>Additive vs. multiplicative isn't arbitrary.</strong> To decompose correctly, first observe the plotted series: constant-size seasonal swings call for additive, swings that grow with the level call for multiplicative.
+        </div>
       </div>
     </div>
 
@@ -450,7 +453,7 @@
         <div class="sub-list">
           <div class="sub-item">
             <p class="sub-term">Temporal train/test split</p>
-            <p class="sub-desc">Train on the earlier portion, test on what comes after — stops future information from leaking into training.</p>
+            <p class="sub-desc">Train on the earlier portion, test on what comes after — this stops future information from leaking into training, and gives you a validation set the model never saw.</p>
           </div>
           <div class="sub-item">
             <p class="sub-term">Time series cross-validation</p>
@@ -523,15 +526,19 @@
         <div class="branch-card" style="--dot: var(--b2)">
           <p class="branch-label">Classical</p>
           <h3 class="branch-title">ARIMA family</h3>
-          <p class="branch-desc">Requires a stationary series (constant mean/variance/autocovariance), checked with the ADF test and enforced through differencing — the "I" in ARIMA.</p>
+          <p class="branch-desc">Stationarity (constant mean/variance/autocovariance) isn't required by every forecasting model — Prophet, for one, doesn't need it — but ARIMA requires it explicitly, on the test set as well as train.</p>
           <div class="sub-list">
             <div class="sub-item">
               <p class="sub-term">ARIMA(p, d, q)</p>
-              <p class="sub-desc"><code>p</code> AR lags of the series, <code>d</code> differences to reach stationarity, <code>q</code> lagged forecast-error terms.</p>
+              <p class="sub-desc"><code>p</code> AR lags, <code>d</code> differences to reach stationarity, <code>q</code> lagged forecast-error terms — fit as one combined equation, not separate standalone AR and MA models.</p>
             </div>
             <div class="sub-item">
               <p class="sub-term">SARIMA(p,d,q)(P,D,Q,m)</p>
               <p class="sub-desc">Adds a seasonal AR/I/MA triple over period <code>m</code> for data with both trend and seasonality.</p>
+            </div>
+            <div class="sub-item">
+              <p class="sub-term">Testing vs. transforming</p>
+              <p class="sub-desc">ADF/KPSS need the series actually differenced to test stationarity — but fitting ARIMA doesn't: just pass the <code>d</code> (and seasonal <code>D</code>) order and it differences internally, or let AutoARIMA find both on its own.</p>
             </div>
             <div class="sub-item">
               <p class="sub-term">Reading ACF/PACF</p>

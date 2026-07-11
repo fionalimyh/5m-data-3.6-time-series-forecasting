@@ -1,0 +1,10 @@
+Just to be sure : 
+4 decompose is to extract the time series components, trend / seasonality/ residuals. to decompose correctly we need to define additive or multiplicative series by observing the time series.
+
+5 split data besides preventing data leakage, is to enable validation on data not used in train set
+
+6 Stationarity is not required on all models. ARIMA will most explicitly require it. Prophet does not require. But good to always know the behavior. Stationarity would also apply on test data.
+
+7 stationarity transformation in ARIMA not needed, just need to specify the D term. however, transformation needed to test with ADF/KPSS. But you can also let auto arima find the d and D term automatically.
+
+8 you can remove AR / MA standalone models, it is usually modelled as single ARIMA model.
