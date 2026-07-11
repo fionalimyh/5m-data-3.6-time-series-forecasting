@@ -1,0 +1,588 @@
+<title>Time-Series Forecasting — Notebook Structure</title>
+<style>
+  :root {
+    --bg: #f4f5f3;
+    --surface: #ffffff;
+    --ink: #14181c;
+    --ink-soft: #4b535a;
+    --ink-muted: #868d90;
+    --hairline: #dde1de;
+    --hairline-strong: #c7ccc8;
+
+    --s1: #2a78d6; /* foundations - blue */
+    --s2: #1baf7a; /* visualization - aqua */
+    --s3: #b5790a; /* decomposition - amber, darkened for light-surface contrast */
+    --s4: #4a3aa7; /* evaluation - violet */
+    --s5: #d4413f; /* forecasting umbrella - red */
+    --b1: #007a00; /* naive - green */
+    --b2: #c85c86; /* arima - magenta, darkened for contrast */
+    --b3: #c65a2c; /* ets - orange, darkened for contrast */
+
+    --font-display: "Iowan Old Style", "Palatino Linotype", "URW Palladio L", Georgia, serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: "SF Mono", "Cascadia Code", Consolas, "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1215;
+      --surface: #171b1f;
+      --ink: #f2f4f2;
+      --ink-soft: #b8c0c2;
+      --ink-muted: #7c8386;
+      --hairline: #2a2f33;
+      --hairline-strong: #363c40;
+
+      --s1: #3987e5;
+      --s2: #34c793;
+      --s3: #d59a2e;
+      --s4: #9085e9;
+      --s5: #e66767;
+      --b1: #2fa62f;
+      --b2: #e598b7;
+      --b3: #e5844e;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1215;
+    --surface: #171b1f;
+    --ink: #f2f4f2;
+    --ink-soft: #b8c0c2;
+    --ink-muted: #7c8386;
+    --hairline: #2a2f33;
+    --hairline-strong: #363c40;
+
+    --s1: #3987e5;
+    --s2: #34c793;
+    --s3: #d59a2e;
+    --s4: #9085e9;
+    --s5: #e66767;
+    --b1: #2fa62f;
+    --b2: #e598b7;
+    --b3: #e5844e;
+  }
+  :root[data-theme="light"] {
+    --bg: #f4f5f3;
+    --surface: #ffffff;
+    --ink: #14181c;
+    --ink-soft: #4b535a;
+    --ink-muted: #868d90;
+    --hairline: #dde1de;
+    --hairline-strong: #c7ccc8;
+
+    --s1: #2a78d6;
+    --s2: #1baf7a;
+    --s3: #b5790a;
+    --s4: #4a3aa7;
+    --s5: #d4413f;
+    --b1: #007a00;
+    --b2: #c85c86;
+    --b3: #c65a2c;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 64px 28px 80px;
+  }
+  code {
+    font-family: var(--font-mono);
+  }
+
+  /* ---------- header ---------- */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--s1);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2rem, 5vw, 2.7rem);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    margin: 0 0 14px;
+    text-wrap: balance;
+  }
+  .lede {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    max-width: 58ch;
+    margin: 0 0 28px;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 56px;
+  }
+  .meta-chip {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink-soft);
+    border: 1px solid var(--hairline-strong);
+    border-radius: 100px;
+    padding: 5px 12px;
+  }
+
+  /* ---------- pipeline / spine ---------- */
+  .pipeline {
+    position: relative;
+    padding-left: 60px;
+  }
+  .pipeline::before {
+    content: "";
+    position: absolute;
+    left: 23px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background: var(--hairline-strong);
+  }
+  .stage {
+    position: relative;
+    padding-bottom: 40px;
+  }
+  .stage-dot {
+    position: absolute;
+    left: -60px;
+    top: 4px;
+    width: 48px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .stage-dot::after {
+    content: "";
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--dot);
+    box-shadow: 0 0 0 4px var(--bg);
+  }
+  .stage-card {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-left: 3px solid var(--dot);
+    border-radius: 8px;
+    padding: 18px 22px 22px;
+  }
+  .stage-num {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+    margin: 0 0 6px;
+  }
+  .stage-title {
+    font-family: var(--font-display);
+    font-size: 1.28rem;
+    font-weight: 600;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+  .stage-desc {
+    font-size: 0.94rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin: 0 0 16px;
+    max-width: 62ch;
+  }
+
+  /* term/definition sub-list used inside every card */
+  .sub-list {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    margin: 0 0 6px;
+  }
+  .sub-item {
+    position: relative;
+    padding-left: 16px;
+  }
+  .sub-item::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 6px;
+    width: 6px;
+    height: 6px;
+    background: var(--dot);
+  }
+  .sub-term {
+    font-family: var(--font-mono);
+    font-size: 0.79rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 2px;
+  }
+  .sub-desc {
+    font-size: 0.86rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: 62ch;
+  }
+  .sub-desc code {
+    font-size: 0.92em;
+    background: color-mix(in srgb, var(--dot) 10%, var(--surface));
+    padding: 1px 5px;
+    border-radius: 4px;
+  }
+
+  /* callout: worked examples / asides pulled from the notebook's own prose */
+  .callout {
+    font-size: 0.84rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    background: color-mix(in srgb, var(--dot) 7%, var(--surface));
+    border: 1px dashed color-mix(in srgb, var(--dot) 38%, var(--surface));
+    border-radius: 6px;
+    padding: 11px 15px;
+    margin: 14px 0 16px;
+  }
+  .callout strong { color: var(--ink); font-weight: 600; }
+
+  .metric-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin: 0 0 4px;
+  }
+  @media (min-width: 560px) {
+    .metric-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ---------- fork-out (stage 5 branches) ---------- */
+  .fork-out {
+    margin-left: -60px;
+  }
+  .fan {
+    display: block;
+    width: 100%;
+    height: 64px;
+  }
+  .fan path {
+    fill: none;
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+  }
+  .branches {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: -2px;
+    align-items: start;
+  }
+  @media (max-width: 720px) {
+    .branches { grid-template-columns: 1fr; }
+    .fan { display: none; }
+  }
+  .branch-card {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-top: 3px solid var(--dot);
+    border-radius: 8px;
+    padding: 16px 18px 20px;
+    height: 100%;
+  }
+  .branch-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin: 0 0 6px;
+  }
+  .branch-title {
+    font-family: var(--font-display);
+    font-size: 1.08rem;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+  .branch-desc {
+    font-size: 0.87rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    margin: 0 0 14px;
+  }
+  .branch-card .sub-list { gap: 9px; }
+  .branch-card .sub-term { font-size: 0.75rem; }
+  .branch-card .sub-desc { font-size: 0.81rem; }
+  .branch-card .callout { font-size: 0.78rem; padding: 9px 12px; margin: 12px 0 2px; }
+
+  /* ---------- footer ---------- */
+  footer {
+    margin-top: 56px;
+    padding-top: 22px;
+    border-top: 1px solid var(--hairline);
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--ink-muted);
+    line-height: 1.7;
+  }
+  footer strong { color: var(--ink-soft); font-weight: 500; }
+</style>
+
+<div class="page">
+
+  <p class="eyebrow">Notebook structure</p>
+  <h1>Time-Series Forecasting</h1>
+  <p class="lede">
+    From raw signal to five competing forecasts — how
+    <code style="font-size:0.9em;">time_series_forecasting_lesson.ipynb</code>
+    is built, stage by stage, ending in a fork across three model families.
+  </p>
+  <div class="meta-row">
+    <span class="meta-chip">15 sections</span>
+    <span class="meta-chip">91 cells</span>
+    <span class="meta-chip">5 pipeline stages</span>
+    <span class="meta-chip">3 model families</span>
+    <span class="meta-chip">5 error metrics</span>
+  </div>
+
+  <div class="pipeline">
+
+    <div class="stage" style="--dot: var(--s1)">
+      <div class="stage-dot"></div>
+      <div class="stage-card">
+        <p class="stage-num">STAGE 01</p>
+        <h2 class="stage-title">Introduction to Time-Series Data</h2>
+        <p class="stage-desc">Time-series data is a sequence of points collected at ordered intervals — as opposed to the cross-sectional data used earlier in the course. The lesson opens by naming the three components that any series can show:</p>
+        <div class="sub-list">
+          <div class="sub-item">
+            <p class="sub-term">Trend</p>
+            <p class="sub-desc">A long-term increase or decrease, not necessarily linear — it can even change direction partway through (e.g. antidiabetic drug sales).</p>
+          </div>
+          <div class="sub-item">
+            <p class="sub-term">Seasonal</p>
+            <p class="sub-desc">A pattern tied to a fixed, known calendar period — time of year, day of week — such as year-end pricing shifts in drug sales.</p>
+          </div>
+          <div class="sub-item">
+            <p class="sub-term">Cyclic</p>
+            <p class="sub-desc">Rises and falls with no fixed frequency, usually driven by the business cycle, typically lasting 2+ years.</p>
+          </div>
+        </div>
+        <div class="callout">
+          <strong>Cyclic ≠ seasonal.</strong> If the frequency is unchanging and tied to the calendar, it's seasonal; if not, it's cyclic. Cycles also tend to run longer, and vary more in magnitude, than seasonal patterns.
+        </div>
+      </div>
+    </div>
+
+    <div class="stage" style="--dot: var(--s2)">
+      <div class="stage-dot"></div>
+      <div class="stage-card">
+        <p class="stage-num">STAGE 02</p>
+        <h2 class="stage-title">Visualizing Time-Series Data</h2>
+        <p class="stage-desc">A sequence of diagnostic plots for reading structure by eye before fitting anything — culminating in a test for whether a series is just noise.</p>
+        <div class="sub-list">
+          <div class="sub-item">
+            <p class="sub-term">Time series plot</p>
+            <p class="sub-desc">The base view: time on the x-axis, the variable of interest on the y-axis.</p>
+          </div>
+          <div class="sub-item">
+            <p class="sub-term">Seasonal plot</p>
+            <p class="sub-desc">Assesses whether seasonality is present, and what shape it takes.</p>
+          </div>
+          <div class="sub-item">
+            <p class="sub-term">Subseries plot</p>
+            <p class="sub-desc">Compares the seasonal pattern across different years side by side.</p>
+          </div>
+          <div class="sub-item">
+            <p class="sub-term">Lag plot</p>
+            <p class="sub-desc">Checks for autocorrelation — a random series shows no identifiable pattern.</p>
+          </div>
+          <div class="sub-item">
+            <p class="sub-term">ACF / correlogram</p>
+            <p class="sub-desc">Plots <code>ACF(k)</code> — the correlation between a series and its own lag <code>k</code> — over lags 1..20, with a shaded 95% confidence band (<code>alpha=0.05</code>); values outside it are statistically significant.</p>
+          </div>
+          <div class="sub-item">
+            <p class="sub-term">White noise check</p>
+            <p class="sub-desc">A series is white noise if its mean ≈ 0, its variance is constant over time, and its autocorrelation is ≈ 0 at every lag.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage" style="--dot: var(--s3)">
+      <div class="stage-dot"></div>
+      <div class="stage-card">
+        <p class="stage-num">STAGE 03</p>
+        <h2 class="stage-title">Time Series Decomposition</h2>
+        <p class="stage-desc">Splits a series into trend (T), seasonal (S) and residual (R) components, so each influence can be measured on its own.</p>
+        <div class="sub-list">
+          <div class="sub-item">
+            <p class="sub-term">Additive &nbsp;·&nbsp; <code>Yt = Tt + St + Rt</code></p>
+            <p class="sub-desc">Use when the seasonal swing stays roughly constant in size as the series grows.</p>
+          </div>
+          <div class="sub-item">
+            <p class="sub-term">Multiplicative &nbsp;·&nbsp; <code>Yt = Tt × St × Rt</code></p>
+            <p class="sub-desc">Use when the seasonal swing grows in proportion to the level of the series.</p>
+          </div>
+          <div class="sub-item">
+            <p class="sub-term">Reading the residual</p>
+            <p class="sub-desc">After removing trend and seasonality, whatever is left should look random with a mean close to zero — anything structured left behind means the decomposition missed something.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage" style="--dot: var(--s4)">
+      <div class="stage-dot"></div>
+      <div class="stage-card">
+        <p class="stage-num">STAGE 04</p>
+        <h2 class="stage-title">Modelling Evaluation Framework</h2>
+        <p class="stage-desc">Because observation order carries information, time series can't use a random train/test split — the rules below preserve that order, and apply identically to every model in Stage 05.</p>
+        <div class="sub-list">
+          <div class="sub-item">
+            <p class="sub-term">Temporal train/test split</p>
+            <p class="sub-desc">Train on the earlier portion, test on what comes after — stops future information from leaking into training.</p>
+          </div>
+          <div class="sub-item">
+            <p class="sub-term">Time series cross-validation</p>
+            <p class="sub-desc"><strong style="color:var(--ink); font-weight:600;">Sliding window</strong> moves a fixed-size training window forward in time; <strong style="color:var(--ink); font-weight:600;">expanding window</strong> keeps growing it to include everything seen so far. More robust performance estimates, at the cost of extra compute and a harder window/horizon choice.</p>
+          </div>
+        </div>
+        <p class="stage-desc" style="margin: 4px 0 10px; font-size:0.9rem;">Every model below is scored on the same five metrics:</p>
+        <div class="metric-grid">
+          <div class="sub-item">
+            <p class="sub-term">MAE</p>
+            <p class="sub-desc">Mean absolute error — average size of the miss, direction ignored.</p>
+          </div>
+          <div class="sub-item">
+            <p class="sub-term">MSE</p>
+            <p class="sub-desc">Mean squared error — squares the errors, so outliers dominate.</p>
+          </div>
+          <div class="sub-item">
+            <p class="sub-term">RMSE</p>
+            <p class="sub-desc">√MSE — brings the error back into the original units.</p>
+          </div>
+          <div class="sub-item">
+            <p class="sub-term">MAPE</p>
+            <p class="sub-desc">Mean absolute percentage error — scale-free, undefined at zero.</p>
+          </div>
+          <div class="sub-item">
+            <p class="sub-term">sMAPE</p>
+            <p class="sub-desc">Symmetric MAPE — fixes MAPE's zero-division and its asymmetric penalty.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stage" style="--dot: var(--s5); padding-bottom: 22px;">
+      <div class="stage-dot"></div>
+      <div class="stage-card">
+        <p class="stage-num">STAGE 05</p>
+        <h2 class="stage-title">Forecasting Models</h2>
+        <p class="stage-desc">The Stage 04 framework is applied identically across three competing model families, each fit on the same Box–Jenkins airline-passengers series, from simplest baseline to fully automated selection.</p>
+      </div>
+    </div>
+
+    <div class="fork-out">
+      <svg class="fan" viewBox="0 0 300 60" preserveAspectRatio="none">
+        <path d="M 24 0 C 24 30, 24 30, 48 60" style="stroke: var(--b1)"></path>
+        <path d="M 24 0 C 24 35, 150 35, 150 60" style="stroke: var(--b2)"></path>
+        <path d="M 24 0 C 24 40, 252 40, 252 60" style="stroke: var(--b3)"></path>
+      </svg>
+      <div class="branches">
+
+        <div class="branch-card" style="--dot: var(--b1)">
+          <p class="branch-label">Baseline</p>
+          <h3 class="branch-title">Naive Forecasting</h3>
+          <p class="branch-desc">Assumes the most recent observation is the best predictor — the floor every other model has to beat.</p>
+          <div class="sub-list">
+            <div class="sub-item">
+              <p class="sub-term">Naive &nbsp;<code>ŷt+1 = yt</code></p>
+              <p class="sub-desc">Tomorrow equals today.</p>
+            </div>
+            <div class="sub-item">
+              <p class="sub-term">Seasonal naive &nbsp;<code>ŷt+1 = yt+1−m</code></p>
+              <p class="sub-desc">Repeat the value from the same point last season.</p>
+            </div>
+            <div class="sub-item">
+              <p class="sub-term">Drift</p>
+              <p class="sub-desc">Extrapolates the average rate of change seen across the whole history.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="branch-card" style="--dot: var(--b2)">
+          <p class="branch-label">Classical</p>
+          <h3 class="branch-title">ARIMA family</h3>
+          <p class="branch-desc">Requires a stationary series (constant mean/variance/autocovariance), checked with the ADF test and enforced through differencing — the "I" in ARIMA.</p>
+          <div class="sub-list">
+            <div class="sub-item">
+              <p class="sub-term">ARIMA(p, d, q)</p>
+              <p class="sub-desc"><code>p</code> AR lags of the series, <code>d</code> differences to reach stationarity, <code>q</code> lagged forecast-error terms.</p>
+            </div>
+            <div class="sub-item">
+              <p class="sub-term">SARIMA(p,d,q)(P,D,Q,m)</p>
+              <p class="sub-desc">Adds a seasonal AR/I/MA triple over period <code>m</code> for data with both trend and seasonality.</p>
+            </div>
+            <div class="sub-item">
+              <p class="sub-term">Reading ACF/PACF</p>
+              <p class="sub-desc">PACF cuts off at lag <code>p</code> (AR order); ACF cuts off at lag <code>q</code> (MA order); both tailing off gradually signals a mixed ARMA process.</p>
+            </div>
+            <div class="sub-item">
+              <p class="sub-term">AutoARIMA</p>
+              <p class="sub-desc">Searches (p,d,q) combinations automatically, scored by AIC/BIC.</p>
+            </div>
+          </div>
+          <div class="callout">
+            Worked on the airline series: <strong>d=1</strong> removed the trend, <strong>D=1 (m=12)</strong> removed yearly seasonality; ACF/PACF spikes at lags 1 and 12 pointed to AR(1)/MA(1) plus seasonal AR(1)/MA(1).
+          </div>
+        </div>
+
+        <div class="branch-card" style="--dot: var(--b3)">
+          <p class="branch-label">Smoothing</p>
+          <h3 class="branch-title">Exponential Smoothing / ETS</h3>
+          <p class="branch-desc">Weighted averages of past observations, with weights decaying exponentially — each method below adds one more component the last one lacked.</p>
+          <div class="sub-list">
+            <div class="sub-item">
+              <p class="sub-term">SES</p>
+              <p class="sub-desc">One smoothing constant <code>α</code>; assumes no trend, no seasonality.</p>
+            </div>
+            <div class="sub-item">
+              <p class="sub-term">Holt's linear trend</p>
+              <p class="sub-desc">Adds a trend equation (<code>β*</code>) on top of SES's level equation.</p>
+            </div>
+            <div class="sub-item">
+              <p class="sub-term">Holt-Winters</p>
+              <p class="sub-desc">Adds a seasonal equation (<code>γ</code>, period <code>m</code>) on top of Holt's method.</p>
+            </div>
+            <div class="sub-item">
+              <p class="sub-term">ETS state-space</p>
+              <p class="sub-desc">Names each model by a 3-letter Error/Trend/Season code, each Additive, Multiplicative or None — e.g. <code>ANN</code>, <code>MAM</code>.</p>
+            </div>
+            <div class="sub-item">
+              <p class="sub-term">AutoETS</p>
+              <p class="sub-desc">Searches all ETS component combinations, scored by AIC/BIC/HQIC.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    Worked dataset: <strong>Box–Jenkins airline passengers</strong> (<code>sktime.datasets.load_airline</code>) &nbsp;·&nbsp;
+    Built on <strong>statsmodels</strong> + <strong>sktime</strong>
+  </footer>
+
+</div>
